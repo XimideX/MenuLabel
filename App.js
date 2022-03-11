@@ -8,7 +8,12 @@
 
 import React, { useState } from 'react';
 import type {Node} from 'react';
-import {launchCamera, launchImageLibrary, ImagePicker} from 'react-native-image-picker';
+import {launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import DocumentPicker from 'react-native-document-picker';
+// import { dirPictures } from 'storage/dirStorage';
+// import CameraRoll from "@react-native-community/cameraroll";
+// import { Camera } from 'expo-camera';
+// import AsyncStorage from "@react-native-community/async-storage";
 
 import {
   Button,
@@ -19,7 +24,10 @@ import {
   Text,
   useColorScheme,
   View,
-  Image
+  Image,
+  PermissionsAndroid, 
+  Platform,
+  ImageBackground
 } from 'react-native';
 
 import {
@@ -37,8 +45,45 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 const Stack = createNativeStackNavigator();
-
+const image = { uri: "https://reactjs.org/logo-og.png" };
 // let url = '';
+
+// function savePicture() {
+//   // if (Platform.OS === "android" && !(await hasAndroidPermission())) {
+//   //   return;
+//   // }
+
+//   CameraRoll.save(tag, { type, album })
+// };
+
+// const openPicker = () => {
+//   let options = {
+//     title: "Pick an Image",
+//     storageOptions: {
+//       skipBackup: true,
+//       path: 'images'
+//       // mediaType: 'photo'
+//     }
+//     // includeBase64: true
+//   };
+
+//   imagePicker.showImagePicker(options, (response) => 
+//   {
+//     if (response.didCancel) {
+//       console.log('User cancelled image picker');
+//     } else if (response.error) {
+//       console.log('ImagePicker Error: ', response.error);
+//     } 
+//     // else if (response.customButton) {
+//     //   console.log('User tapped custom button: ', response.customButton);
+//     //   alert(response.customButton);
+//     // } 
+//     else {
+//       const source = { uri: response.uri };
+//       console.log(source);
+//     }
+//   })
+// }
 
 function HomeScreen({navigation}) {
   return (
@@ -48,26 +93,40 @@ function HomeScreen({navigation}) {
         title="Take Picture Screen"
         onPress={() => navigation.navigate('TakePicture')}
       />
+      <Button
+        title="See Image Screen"
+        onPress={() => navigation.navigate('SeeImage')}
+      />
+    </View>
+  );
+}
+
+function SeeImageScreen({navigation}) {
+  return (
+    <View style={styles.container}>
+      <ImageBackground source={image} resizeMode="cover" style={styles.image}>
+        <Text style={styles.text}>Inside</Text>
+      </ImageBackground>
     </View>
   );
 }
 
 function TakePictureScreen() {
-  const [imageUri, setimageUri] = useState('');
-  const [number, setNumber] = useState(0);
-  // let url = '';
+  const [imageUri, setimageUri] = useState("");
+  const [number, setNumber] = useState(1);
+  const [singleFile, setSingleFile] = useState(null);
+
   const openCamera = () => {
     let options = {
       storageOptions: {
-        // skipBackup: true,
+        saveToPhotos  : true,
         path: 'images',
         mediaType: 'photo'
       },
       includeBase64: true
     };
     launchCamera(options, response => {
-      // console.log('Response = ', response);
-  
+      setNumber(number + 2);
       if (response.didCancel) {
         console.log('User cancelled image picker');
       } else if (response.error) {
@@ -76,117 +135,185 @@ function TakePictureScreen() {
         console.log('User tapped custom button: ', response.customButton);
         alert(response.customButton);
       } else {
-        // const source = { uri: 'data:image/jpeg;base64,' + response.assets[0].data };
-        const source = { uri: response.assets[0].uri };
-        // const source = response.assets[0].uri;
-        setimageUri(source);
-        setNumber(number + 1);
-        const retorno = JSON.stringify(response);
-        // let source = response;
-        // this.setState({
-
-        //   resourcePath: source,
-
-        // });
-        url = source;
-        console.log('url = ', url);
+        const source = { uri: "data:image/jpeg;base64," + response.assets[0].base64 };
         console.log('number = ', number);
-        // console.log('response', JSON.stringify(response));
-        // this.setState({
-        //   filePath: response,
-        //   fileData: response.data,
-        //   fileUri: response.uri
-        // });
+        setimageUri(source);
+        console.log('imageUriopen ', imageUri);
       }
     });
   
   }
+
+  const openLibrary = () =>
+  {
+    let options = {
+      storageOptions: {
+        // skipBackup: true,
+        path: 'images',
+        mediaType: 'photo'
+      },
+      includeBase64: true
+    };
+    launchImageLibrary(options, response => {
+      setNumber(number + 1);
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      } else if (response.customButton) {
+        console.log('User tapped custom button: ', response.customButton);
+        alert(response.customButton);
+      } else {
+        const source = { uri: "data:image/jpeg;base64," + response.assets[0].base64 };
+        console.log('url = ', source);
+        console.log('number = ', number);
+        setimageUri(source);
+        // try {
+        //   await AsyncStorage.setItem(
+        //     'photo',
+        //     imageUri
+        //   );
+        //   alert("Photo saved sucessfully!");
+        // } catch (error) {
+        //   alert("Something got wrong! " + error);
+        // }
+        console.log('imageUri ', imageUri);
+      }
+    });
+  };
+
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Take a Picture </Text>
-      <Button
-        title="Take Picture"
-        onPress={() => openCamera()}
-      />
-      <Image source={{imageUri}}
-      style={
-        {
-          height: 100,
-          width: 100,
-          borderRadius: 100,
-          borderWidth: 2,
-          borderColor: 'black'
-        }
-      }
-      /> 
-      <Text>Open Library {number}</Text>
-      <Button
-        title="Open Library"
-        onPress={() => openLibrary()}
-      />
-      <Image source={{imageUri}}
-      style={
-        {
-          height: 100,
-          width: 100,
-          borderRadius: 100,
-          borderWidth: 2,
-          borderColor: 'black'
-        }
-      }
-      /> 
+    <View>
       {
-        Images.map((image, index) => {
-          <Image source={image.url}/>
-        })
-      }
-      <Image source={{imageUri}}
-      style={
-        {
-          height: 100,
-          width: 100,
-          borderRadius: 100,
-          borderWidth: 2,
-          borderColor: 'black'
-        }
-      }
-      /> 
+        /* <Button
+            title="Take Picture"
+            onPress={() => openCamera()}
+            onPress = {
+              openCamera
+            }
+          />
+          <Image source={{imageUri}}
+            style={
+              {
+                height: 200,
+                width: 200,
+                borderRadius: 100,
+                borderWidth: 2,
+                borderColor: 'black'
+              }
+            }
+          /> 
+          <Button
+            title="Take Picture"
+            onPress={() => openCamera()}
+            onPress = {
+              openLibrary
+            }
+          />
+          <Image source={{imageUri}}
+            style={
+              {
+                height: 200,
+                width: 200,
+                borderRadius: 100,
+                borderWidth: 2,
+                borderColor: 'black'
+              }
+            }
+          /> */
+          <View style={styles.container}>
+            <Button
+            title="Take Picture"
+            onPress = {
+              openCamera
+            }
+          />
+          <Image source={{imageUri}}
+            style={
+              {
+                height: 200,
+                width: 200,
+                borderRadius: 100,
+                borderWidth: 2,
+                borderColor: 'black'
+              }
+            }
+          /> 
+          <Button
+            title="Choose Image From Gallery"
+            onPress = {
+              openLibrary
+            }
+          />
+          <Image source={imageUri}
+            style={
+              {
+                height: 200,
+                width: 200,
+                borderRadius: 100,
+                borderWidth: 2,
+                borderColor: 'black'
+              }
+            }
+          />
+            <ImageBackground source={imageUri} resizeMode="cover" style={styles.image}>
+              <Text style={styles.text}>Inside</Text>
+            </ImageBackground>
+          </View>
+}          
     </View>
+    // <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+    //   <Text>Take a Picture </Text>
+    //   <Button
+    //     title="Take Picture"
+    //     onPress={() => openCamera()}
+    //     // onPress = {
+    //     //   openPicker
+    //     // }
+    //   />
+    //   <Image source={{imageUri}}
+    //   style={
+    //     {
+    //       height: 100,
+    //       width: 100,
+    //       borderRadius: 100,
+    //       borderWidth: 2,
+    //       borderColor: 'black'
+    //     }
+    //   }
+    //   /> 
+    //   <Text>Open Library {number}</Text>
+    //   <Button
+    //     title="Open Library"
+    //     onPress={() => openLibrary()}
+    //   />
+    //   <Image source={{imageUri}}
+    //   style={
+    //     {
+    //       height: 100,
+    //       width: 100,
+    //       borderRadius: 100,
+    //       borderWidth: 2,
+    //       borderColor: 'black'
+    //     }
+    //   }
+    //   /> 
+    //   <Image source={{imageUri}}
+    //   style={
+    //     {
+    //       height: 100,
+    //       width: 100,
+    //       borderRadius: 100,
+    //       borderWidth: 2,
+    //       borderColor: 'black'
+    //     }
+    //   }
+    //   /> 
+    // </View>
   );
 }
 
-function openLibrary ()
-{
-  const options = {
-    storageOptions: {
-      // skipBackup: true,
-      path: 'images',
-      mediaType: 'photo'
-    },
-    includeBase64: true
-  };
-  launchImageLibrary(options, response => {
-    // console.log('Response = ', response);
 
-    if (response.didCancel) {
-      console.log('User cancelled image picker');
-    } else if (response.error) {
-      console.log('ImagePicker Error: ', response.error);
-    } else if (response.customButton) {
-      console.log('User tapped custom button: ', response.customButton);
-      alert(response.customButton);
-    } else {
-      // const source = { uri: 'data:image/jpeg;base64,' + response.assets[0].base64 };
-      const source = response.assets[0].uri;
-      // imageUri.uri = response;
-      const retorno = JSON.stringify(response);
-
-      console.log('Response = ', source);
-      this.url = source;
-      console.log('url = ', this.url);
-    }
-  });
-};
 
 function App() {
   return (
@@ -194,6 +321,7 @@ function App() {
       <Stack.Navigator>
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="TakePicture" component={TakePictureScreen} />
+        <Stack.Screen name="SeeImage" component={SeeImageScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
