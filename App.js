@@ -8,8 +8,8 @@
  import { AppRegistry } from "react-native";
 
 import React, { useState } from 'react';
-// import type {Node} from 'react';
-import MapView, { Marker }  from 'react-native-maps';
+import type {Node} from 'react';
+import MapView, { Marker, CustomMarker }  from 'react-native-maps';
 import {launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import DocumentPicker from 'react-native-document-picker';
 import { aws } from './keys.js';
@@ -77,14 +77,15 @@ function HomeScreen({navigation}) {
   );
 }
 
+function SeeMapScreen({navigation}) {
 // inicio da função do Mapa
-function SeeMapScreen() {
   const [region, setRegion] = useState({
           latitude: 37.78825,
           longitude: -122.4324,
           latitudeDelta: 1.000,
           longitudeDelta: 1.000,
   });
+  const [coordinates, setCoordinates] = useState([]);
   const [marker, setMarker] = useState({
     latitude: 37.78825,
     longitude: -122.4324,
@@ -102,9 +103,24 @@ function SeeMapScreen() {
     })
     setRegionGet(false);
     console.log(region);
+  const onFingerPress = (coordinate) => {
+    console.log(coordinate);
+    setCoordinates([...coordinates, coordinate]);
   }
 
   const onRegionChange = (region) => {
+    <View style={styles.container}> 
+        onPress={(e) => onFingerPress(e.nativeEvent.coordinate)}
+        {coordinates.length > 0 && (coordinates.map((item, index) => 
+        {
+          return <Marker 
+                    key={index} 
+                    title="Test" 
+                    coordinate={item}
+                    onPress={() => navigation.navigate("TakePicture", item)}
+                      // navigateThroughtScreens()}   
+                  />
+        }))}
 
   };
   if(regionGet)
@@ -127,6 +143,7 @@ function SeeMapScreen() {
       />
     </MapView>
   );
+    </View>
 }
 
 function SeeImageScreen({navigation}) {
@@ -139,10 +156,38 @@ function SeeImageScreen({navigation}) {
   );
 }
 function TakePictureScreen() { // inicalizando a parte da camera, botão.
-  const [imageUri, setimageUri] = useState("");
+  const [imageUri, setimageUri] = useState();
   const [number, setNumber] = useState(1);
   const [singleFile, setSingleFile] = useState(null);
-  const openCamera = () => {
+  
+  if (imageUri == null && imageUri == undefined)
+  {
+
+    try {
+      fetch('http://10.0.2.2:5000/product/GetImage').
+      then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not OK');
+        }
+        return response.text();
+      })
+      .then(myBlob => {
+        const source = { uri: myBlob }
+        setimageUri(source);
+      })
+      .catch(error => {
+        console.error('There has been a problem with your fetch operation:', error);
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      console.log("finalizou")
+    }
+  }
+  // if (route.params == )
+  console.log(route.params);
+
+  const openCamera =  () => {
     let options = {
       storageOptions: {
         saveToPhotos  : true,
@@ -174,25 +219,63 @@ function TakePictureScreen() { // inicalizando a parte da camera, botão.
           name: response.assets[0].fileName,
           type: "image/jpg"
         }
-        const config = {
-          keyPrefix: 's3/',
-          bucket: 'upload-photos-menulabel-bucket',
-          region: 'sa-east-1',
-          accessKey: 'AKIA3DDKICZFJNM5CRUH',
-          secretKey: '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',
-          successActionStatus: 201
-        }
+
+        const fileToUpload = response.assets[0].uri;
+        // const fileToUpload = response.assets[0].uri;
+        const data = new FormData();
+        data.append('image', {
+          uri: fileToUpload,
+          type: response.assets[0].type,
+          name: response.assets[0].fileName
+        });
+        // data.append('file_attachment', fileToUpload);
+        console.log(fileToUpload);
+        // let data = `{
+        //   "image": ` + fileToUpload + `
+        // }`;
+        // Please change file upload URL
+        console.log("ate aqui vai");
+        console.log(data);
+        const requestOptions = {
+          method: 'POST',
+          // headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'multipart/form-data' },
+          body: data
+        };
+        fetch('http://10.0.2.2:5000/product/InsertImage', requestOptions)
+          .then(response => response.json())
+          .then(data => console.log(data))
+          .catch((error) => {
+            console.error("deu braga");
+            console.error(error);
+          });
+        // let res = fetch('https://localhost:5001/product/InsertImage',
+        // {
+        //   method: 'post',
+        //   body: data,
+        //   headers: {
+        //     'Content-Type': 'multipart/form-data; ',
+        //   },
+        // }
+        // );
+        // let responseJson = res.json();
+        // console.log("json");
+        // console.log(responseJson);
+        // if (responseJson.status == 1) {
+        //   alert('Upload Successful');
+        // }
         
-        RNS3.put(file, config).then((response) => {
-          if (response != null)
-          {
-            console.log('rolou');  
-          }
-          // console.log(response);
-        }).catch((error) =>{
-          console.log('error ', error);
-          // console.log(error);
-        })
+
+        // const app = express();
+        // app.use(bodyParser.json());
+        // app.post('https://localhost:5001/product/InsertImage', upload.array(source.uri, 3), (req, res) => {
+        //   console.log('file', req.files);
+        //   console.log('body', req.body);
+        //   res.status(200).json({
+        //     message: 'success!',
+        //   });
+        // });
+
       }
     });
   
@@ -224,6 +307,37 @@ function TakePictureScreen() { // inicalizando a parte da camera, botão.
         console.log('imageUri ', imageUri);
       }
     });
+  };
+
+  const getImage = async () =>
+  {
+    try {
+      console.log("entrei");
+      const axios = require('axios').default;
+
+      fetch('http://10.0.2.2:5000/product/GetImage').
+      then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not OK');
+        }
+        return response.text();
+      })
+      .then(myBlob => {
+        const source = { uri: myBlob }
+        setimageUri(source);
+        console.log("myUri" + imageUri);
+        console.log(myBlob);
+      })
+      .catch(error => {
+        console.error('There has been a problem with your fetch operation:', error);
+      });
+    
+    } catch (error) {
+      
+      console.error(error);
+    } finally {
+      console.log("finalizou")
+    }
   };
 
   return (
