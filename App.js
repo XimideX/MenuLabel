@@ -12,15 +12,13 @@ import type {Node} from 'react';
 import MapView, { Marker, CustomMarker }  from 'react-native-maps';
 import {launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import DocumentPicker from 'react-native-document-picker';
-import { aws } from './keys.js';
 import { Button, SafeAreaView, ScrollView, StatusBar,  StyleSheet, TextInput, Text, useColorScheme, View,Image, PermissionsAndroid,  Platform, ImageBackground } from 'react-native';
 import { Colors, DebugInstructions, Header, LearnMoreLinks, ReloadInstructions } from 'react-native/Libraries/NewAppScreen';
 import images from './android/app/src/images';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { RNS3 } from 'react-native-aws3';
-//import Geolocation from '@react-native-community/geolocation';
-import GeoLocation from "./GeoLocation.js";
+// import Geolocation from '@react-native-community/geolocation';
+// import GeoLocation from "./GeoLocation.js";
 
 
 // Inicio das declarações 
@@ -91,7 +89,6 @@ function SeeMapScreen({navigation}) {
     longitude: -122.4324,
   });
   const [regionGet, setRegionGet] = useState(true);
-
   const onGetRegion = (position) => {
     setMarker({ 
       latitude: position.coords.latitude,
@@ -103,48 +100,51 @@ function SeeMapScreen({navigation}) {
     })
     setRegionGet(false);
     console.log(region);
+  }
+
   const onFingerPress = (coordinate) => {
     console.log(coordinate);
     setCoordinates([...coordinates, coordinate]);
   }
 
-  const onRegionChange = (region) => {
-    <View style={styles.container}> 
-        onPress={(e) => onFingerPress(e.nativeEvent.coordinate)}
-        {coordinates.length > 0 && (coordinates.map((item, index) => 
-        {
-          return <Marker 
-                    key={index} 
-                    title="Test" 
-                    coordinate={item}
-                    onPress={() => navigation.navigate("TakePicture", item)}
-                      // navigateThroughtScreens()}   
-                  />
-        }))}
+  const onRegionChange = (region) => {}
 
-  };
-  if(regionGet)
-  {
-    GeoLocation.callLocation(onGetRegion);
-  }
- 
-  return ( // Inicio da Visualização do Mapa
+
+
+if(regionGet)
+{
+  GeoLocation.callLocation(onGetRegion);
+}
+
+return ( // Inicio da Visualização do Mapa
+  <View style={styles.container}> 
     <MapView
       style={{flex:1}}
+      onPress={(e) => onFingerPress(e.nativeEvent.coordinate)}
       initialRegion={region}
       regionLocale={region}
       onRegionChange={onRegionChange}
-      >
-      <Marker coordinate = {marker}
-        Oncre
-        pinColor = {"purple"} // any color
-        title={"title"}
-        description={"description"}
-      />
+    >
+      {coordinates.length > 0 && (coordinates.map((item, index) => 
+        {
+          return <Marker 
+          key={index} 
+          title="Test" 
+          coordinate={item}
+          onPress={() => navigation.navigate("TakePicture", item)}
+          // navigateThroughtScreens()}   
+          />
+        }))
+      }
+    <Marker coordinate = {marker}
+      Oncre
+      pinColor = {"purple"} // any color
+      title={"title"}
+      description={"description"}
+    />
     </MapView>
-  );
-    </View>
-}
+  </View>
+)}
 
 function SeeImageScreen({navigation}) {
   return ( // imagem de fundo pagina inicial
@@ -155,7 +155,7 @@ function SeeImageScreen({navigation}) {
     </View>
   );
 }
-function TakePictureScreen() { // inicalizando a parte da camera, botão.
+function TakePictureScreen({navigation, route}) { // inicalizando a parte da camera, botão.
   const [imageUri, setimageUri] = useState();
   const [number, setNumber] = useState(1);
   const [singleFile, setSingleFile] = useState(null);
@@ -163,26 +163,26 @@ function TakePictureScreen() { // inicalizando a parte da camera, botão.
   if (imageUri == null && imageUri == undefined)
   {
 
-    try {
-      fetch('http://10.0.2.2:5000/product/GetImage').
-      then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not OK');
-        }
-        return response.text();
-      })
-      .then(myBlob => {
-        const source = { uri: myBlob }
-        setimageUri(source);
-      })
-      .catch(error => {
-        console.error('There has been a problem with your fetch operation:', error);
-      });
-    } catch (error) {
-      console.error(error);
-    } finally {
-      console.log("finalizou")
-    }
+    // try {
+    //   fetch('http://10.0.2.2:5000/product/GetImage').
+    //   then(response => {
+    //     if (!response.ok) {
+    //       throw new Error('Network response was not OK');
+    //     }
+    //     return response.text();
+    //   })
+    //   .then(myBlob => {
+    //     const source = { uri: myBlob }
+    //     setimageUri(source);
+    //   })
+    //   .catch(error => {
+    //     console.error('There has been a problem with your fetch operation:', error);
+    //   });
+    // } catch (error) {
+    //   console.error(error);
+    // } finally {
+    //   console.log("finalizou")
+    // }
   }
   // if (route.params == )
   console.log(route.params);
@@ -197,7 +197,6 @@ function TakePictureScreen() { // inicalizando a parte da camera, botão.
       includeBase64: true
     };
     launchCamera(options, response => { //inicializando a camera
-      setNumber(number + 2);
       if (response.didCancel) {
         console.log('User cancelled image picker');
       } else if (response.error) {
@@ -208,73 +207,32 @@ function TakePictureScreen() { // inicalizando a parte da camera, botão.
       } else {
         // const source = { uri: "data:image/png;base64," + response.assets[0].base64 };
         const source = { uri: response.assets[0].uri };
-        console.log('number = ', number);
+        console.log( response);
         setimageUri(source);
-        // console.log('imageUriopen ', imageUri);
-        let sourceUri = source.uri.toString();
-        console.log(sourceUri);
-        // console.log('uri ' + sourceUri)
+        // let sourceUri = source.uri.toString();
+        // console.log(sourceUri);
         const file = {
-          uri: source.uri,
-          name: response.assets[0].fileName,
+          // uri: source.uri,
+          // name: response.assets[0].fileName,
           type: "image/jpg"
         }
 
-        const fileToUpload = response.assets[0].uri;
         // const fileToUpload = response.assets[0].uri;
         const data = new FormData();
         data.append('image', {
-          uri: fileToUpload,
-          type: response.assets[0].type,
-          name: response.assets[0].fileName
+          // uri: fileToUpload,
+          // type: response.assets[0].type,
+          // name: response.assets[0].fileName
         });
-        // data.append('file_attachment', fileToUpload);
-        console.log(fileToUpload);
-        // let data = `{
-        //   "image": ` + fileToUpload + `
-        // }`;
-        // Please change file upload URL
+        // console.log(fileToUpload);
         console.log("ate aqui vai");
         console.log(data);
         const requestOptions = {
           method: 'POST',
-          // headers: { 'Content-Type': 'application/json' },
           headers: { 'Content-Type': 'multipart/form-data' },
           body: data
         };
-        fetch('http://10.0.2.2:5000/product/InsertImage', requestOptions)
-          .then(response => response.json())
-          .then(data => console.log(data))
-          .catch((error) => {
-            console.error("deu braga");
-            console.error(error);
-          });
-        // let res = fetch('https://localhost:5001/product/InsertImage',
-        // {
-        //   method: 'post',
-        //   body: data,
-        //   headers: {
-        //     'Content-Type': 'multipart/form-data; ',
-        //   },
-        // }
-        // );
-        // let responseJson = res.json();
-        // console.log("json");
-        // console.log(responseJson);
-        // if (responseJson.status == 1) {
-        //   alert('Upload Successful');
-        // }
-        
 
-        // const app = express();
-        // app.use(bodyParser.json());
-        // app.post('https://localhost:5001/product/InsertImage', upload.array(source.uri, 3), (req, res) => {
-        //   console.log('file', req.files);
-        //   console.log('body', req.body);
-        //   res.status(200).json({
-        //     message: 'success!',
-        //   });
-        // });
 
       }
     });
@@ -311,33 +269,33 @@ function TakePictureScreen() { // inicalizando a parte da camera, botão.
 
   const getImage = async () =>
   {
-    try {
-      console.log("entrei");
-      const axios = require('axios').default;
+    // try {
+    //   console.log("entrei");
+    //   const axios = require('axios').default;
 
-      fetch('http://10.0.2.2:5000/product/GetImage').
-      then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not OK');
-        }
-        return response.text();
-      })
-      .then(myBlob => {
-        const source = { uri: myBlob }
-        setimageUri(source);
-        console.log("myUri" + imageUri);
-        console.log(myBlob);
-      })
-      .catch(error => {
-        console.error('There has been a problem with your fetch operation:', error);
-      });
+    //   fetch('http://10.0.2.2:5000/product/GetImage').
+    //   then(response => {
+    //     if (!response.ok) {
+    //       throw new Error('Network response was not OK');
+    //     }
+    //     return response.text();
+    //   })
+    //   .then(myBlob => {
+    //     const source = { uri: myBlob }
+    //     setimageUri(source);
+    //     console.log("myUri" + imageUri);
+    //     console.log(myBlob);
+    //   })
+    //   .catch(error => {
+    //     console.error('There has been a problem with your fetch operation:', error);
+    //   });
     
-    } catch (error) {
+    // } catch (error) {
       
-      console.error(error);
-    } finally {
-      console.log("finalizou")
-    }
+    //   console.error(error);
+    // } finally {
+    //   console.log("finalizou")
+    // }
   };
 
   return (
@@ -345,6 +303,12 @@ function TakePictureScreen() { // inicalizando a parte da camera, botão.
     <View>
     {
       <View style={styles.container}>
+        <Button
+          title="Get Picture"
+          onPress = {
+            getImage
+          }
+        />
         <Button
         title="Take Picture"
         onPress = {
