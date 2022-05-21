@@ -86,8 +86,8 @@ function SeeMapScreen({navigation}) {
   });
   const [coordinates, setCoordinates] = useState([]);
   const [marker, setMarker] = useState({
-    // latitude: 37.78825,
-    // longitude: -122.4324,
+    latitude: 37.78825,
+    longitude: -122.4324,
   });
   const [regionGet, setRegionGet] = useState(true);
   console.log("latitude");
