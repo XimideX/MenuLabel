@@ -41,6 +41,7 @@ function HomeScreen({navigation}) {
       setTexto('Agora foi');
     }
   }
+
   return (// inicio da tela Home Inicial
     <View style={{ flex: 1, justifyContent: 'center' }}>
       <Text >{texto}</Text>
@@ -85,20 +86,22 @@ function SeeMapScreen({navigation}) {
   });
   const [coordinates, setCoordinates] = useState([]);
   const [marker, setMarker] = useState({
-    latitude: 37.78825,
-    longitude: -122.4324,
+    // latitude: 37.78825,
+    // longitude: -122.4324,
   });
   const [regionGet, setRegionGet] = useState(true);
+  console.log("latitude");
+  console.log(marker.latitude);
   const onGetRegion = (position) => {
+    console.log('gettei region');
+    console.log(position);
     setMarker({ 
       latitude: position.coords.latitude,
       longitude: position.coords.longitude
     });
-    setRegion({...marker,           
-      latitudeDelta: 0.900,
-      longitudeDelta: 0.900,
-    })
+    
     setRegionGet(false);
+    console.log("regiao");
     console.log(region);
   }
 
@@ -113,7 +116,23 @@ function SeeMapScreen({navigation}) {
 
 if(regionGet)
 {
+  console.log("entrei");
+  console.log();
+  region
+  console.log("entrei");
+  console.log(marker);
+  if (regionGet)
+  {
+    console.log(`entrei no if`);
+    console.log(region);
+    setRegionGet(false);
+    setRegion({...marker,           
+      latitudeDelta: 0.900,
+      longitudeDelta: 0.900,
+    })
+  }
   GeoLocation.callLocation(onGetRegion);
+  // setRegionGet(false);
 }
 
 return ( // Inicio da Visualização do Mapa
@@ -136,12 +155,16 @@ return ( // Inicio da Visualização do Mapa
           />
         }))
       }
-    <Marker coordinate = {marker}
-      Oncre
-      pinColor = {"purple"} // any color
-      title={"title"}
-      description={"description"}
-    />
+      {marker != undefined && (coordinates.map(() =>
+      {
+        return <Marker coordinate = {marker}
+          Oncre
+          pinColor = {"purple"} // any color
+          title={"title"}
+          description={"description"}
+        />
+        }))
+      }
     </MapView>
   </View>
 )}
@@ -155,6 +178,8 @@ function SeeImageScreen({navigation}) {
     </View>
   );
 }
+
+//#region tela de foto inicio
 function TakePictureScreen({navigation, route}) { // inicalizando a parte da camera, botão.
   const [imageUri, setimageUri] = useState();
   const [number, setNumber] = useState(1);
@@ -209,8 +234,6 @@ function TakePictureScreen({navigation, route}) { // inicalizando a parte da cam
         const source = { uri: response.assets[0].uri };
         console.log( response);
         setimageUri(source);
-        // let sourceUri = source.uri.toString();
-        // console.log(sourceUri);
         const file = {
           // uri: source.uri,
           // name: response.assets[0].fileName,
@@ -299,17 +322,14 @@ function TakePictureScreen({navigation, route}) { // inicalizando a parte da cam
   };
 
   return (
-    
-    <View>
-    {
-      <View style={styles.container}>
-        <Button
-          title="Get Picture"
-          onPress = {
-            getImage
-          }
-        />
-        <Button
+    <View style={styles.container}>
+      <Button
+        title="Get Picture"
+        onPress = {
+          getImage
+        }
+      />
+      <Button
         title="Take Picture"
         onPress = {
           openCamera
@@ -346,12 +366,10 @@ function TakePictureScreen({navigation, route}) { // inicalizando a parte da cam
       <ImageBackground source={imageUri} resizeMode="cover" style={styles.image}>
         <Text style={styles.te}>Inside</Text>
       </ImageBackground>
-      </View>
-  }          
-  </View>
-   
-  );
+    </View>
+  )
 }
+//#endregion tela foto fim
 
 // Iniciando o App, metodo principal que indica as nevagaçoes existentes no sistema 
 function App() { //Inicio Navegação
@@ -443,6 +461,10 @@ function App() { //Inicio Navegação
 
 // Inicio do Css, estilo do App
 const styles = StyleSheet.create({// Inicio Css
+  container: {
+    flex: 1,
+    paddingTop: 50
+  },
   teste001:{
     flex:0.8,
     backgroundColor: '#6495ED',

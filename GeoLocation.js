@@ -35,12 +35,14 @@ import Geolocation from '@react-native-community/geolocation';
           alert("Permisão de localização negada");
         }
       };
-        requestLocationPermission();
+      requestLocationPermission();
     }
      
   }
 
   const getLocation = (setPositionFunc) => {
+    console.log("entrei getLocation");
+    console.log(setPositionFunc);
     // const setPositionFunc = (position) => {
     //   //  currenteLongitude = JSON.stringify(position.coords.latitude);
     //   //  currenteLongitude = JSON.stringify(position.coords.longitude);
