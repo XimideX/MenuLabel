@@ -18,7 +18,7 @@ import images from './android/app/src/images';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 // import Geolocation from '@react-native-community/geolocation';
-// import GeoLocation from "./GeoLocation.js";
+import GeoLocation from "./GeoLocation.js";
 
 
 // Inicio das declarações 
