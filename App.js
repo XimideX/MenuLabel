@@ -103,47 +103,47 @@ function SeeMapScreen({navigation}) {
     })
     setRegionGet(false);
     console.log(region);
+  }
   const onFingerPress = (coordinate) => {
     console.log(coordinate);
     setCoordinates([...coordinates, coordinate]);
   }
 
-  const onRegionChange = (region) => {
-    <View style={styles.container}> 
-        onPress={(e) => onFingerPress(e.nativeEvent.coordinate)}
-        {coordinates.length > 0 && (coordinates.map((item, index) => 
-        {
-          return <Marker 
-                    key={index} 
-                    title="Test" 
-                    coordinate={item}
-                    onPress={() => navigation.navigate("TakePicture", item)}
-                      // navigateThroughtScreens()}   
-                  />
-        }))}
-
-  };
+  const onRegionChange = (region) => {  };
   if(regionGet)
   {
     GeoLocation.callLocation(onGetRegion);
   }
  
   return ( // Inicio da Visualização do Mapa
-    <MapView
-      style={{flex:1}}
-      initialRegion={region}
-      regionLocale={region}
-      onRegionChange={onRegionChange}
-      >
-      <Marker coordinate = {marker}
-        Oncre
-        pinColor = {"purple"} // any color
-        title={"title"}
-        description={"description"}
-      />
-    </MapView>
-  );
+    <View style={styles.container}> 
+      <MapView
+        style={{flex:1}}
+        initialRegion={region}
+        onPress={(e) => onFingerPress(e.nativeEvent.coordinate)}
+        regionLocale={region}
+        onRegionChange={onRegionChange}
+        >
+        {coordinates.length > 0 && (coordinates.map((item, index) => 
+          {
+            return <Marker 
+                      key={index} 
+                      title="Test" 
+                      coordinate={item}
+                      onPress={() => navigation.navigate("TakePicture", item)}
+                        // navigateThroughtScreens()}   
+                    />
+          }))
+        }
+        <Marker coordinate = {marker}
+          Oncre
+          pinColor = {"purple"} // any color
+          title={"title"}
+          description={"description"}
+        />
+      </MapView>
     </View>
+  );
 }
 
 function SeeImageScreen({navigation}) {
@@ -155,7 +155,7 @@ function SeeImageScreen({navigation}) {
     </View>
   );
 }
-function TakePictureScreen() { // inicalizando a parte da camera, botão.
+function TakePictureScreen({navigation, route}) { // inicalizando a parte da camera, botão.
   const [imageUri, setimageUri] = useState();
   const [number, setNumber] = useState(1);
   const [singleFile, setSingleFile] = useState(null);
@@ -479,6 +479,10 @@ function App() { //Inicio Navegação
 
 // Inicio do Css, estilo do App
 const styles = StyleSheet.create({// Inicio Css
+  container: {
+    flex: 1,
+    paddingTop: 50
+  },
   teste001:{
     flex:0.8,
     backgroundColor: '#6495ED',
