@@ -150,14 +150,35 @@ function SeeMapScreen({navigation}) {
           longitudeDelta: 0.0421,
   });
   const [coordinates, setCoordinates] = useState([]);
+  const [text, onChangeText] = React.useState("");
+  // const [markers, setMarkers] = useState([]);
+  const titleName = "Test";
 
   console.log(coordinates);
   
   const onRegionChange = (region) => {}
 
+  function onChangeTitle()
+  {
+    let indexArray = coordinates.findIndex(el => el.title === 'NewTitle');
+    coordinates[indexArray] = {...coordinates[indexArray], title: text};
+    console.log(text);
+    console.log(coordinates);
+  }
+
+
   const onFingerPress = (coordinate) => {
     console.log(coordinate);
-    setCoordinates([...coordinates, coordinate]);
+    let tete = { latitude: coordinate.latitude, longitude: coordinate.longitude, title: "Title1" };
+    console.log(tete);
+    setCoordinates([...coordinates, tete]);
+  }
+
+  const onMarkTouched = (titleName, index, item) => {
+    let indexArray = coordinates.findIndex(el => el.title === 'Title1');
+    coordinates[indexArray] = {...coordinates[indexArray], title: 'NewTitle'};
+    console.log(coordinates);
+    // setCoordinates([...coordinates, coordinates]);
   }
 
   let staticData = [
@@ -174,6 +195,15 @@ function SeeMapScreen({navigation}) {
 
   return (
     <View style={styles.container}> 
+      <TextInput
+        // style={styles.input}
+        onChangeText={onChangeText}
+        value={text}
+      />
+      <Button
+        title="Submit"
+        onPress={() => onChangeTitle()}  
+      />
       <MapView
         style={{flex:1}}
         initialRegion={{
@@ -200,9 +230,9 @@ function SeeMapScreen({navigation}) {
         {
           return <Marker 
                     key={index} 
-                    title="Test" 
-                    coordinate={item}
-                    onPress={() => navigation.navigate("TakePicture", item)}
+                    title={item.title} 
+                    coordinate={{latitude: item.latitude, longitude: item.longitude}}
+                    onPress={(e) => onMarkTouched(item.title, index, item)}
                       // navigateThroughtScreens()}   
                   />
         }))}
@@ -416,6 +446,7 @@ function TakePictureScreen({navigation, route}) {
     } catch (error) {
       
       console.error(error);
+      console.log("erro")
     } finally {
       console.log("finalizou")
     }
